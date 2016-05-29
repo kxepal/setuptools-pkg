@@ -53,4 +53,9 @@ setup(
     install_requires=[
         'setuptools',  # TODO: can we be sure about setuptools stability?
     ],
+    entry_points={
+        "distutils.commands": [
+            "bdist_pkg = setuptools_pkg.bdist_pkg:bdist_pkg",
+        ],
+    },
 )
