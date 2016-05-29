@@ -1,0 +1,5 @@
+setuptools_pkg
+==============
+
+Plugin for setuptools that provides `bdist_pkg` command for building FreeBSD
+package artifact.

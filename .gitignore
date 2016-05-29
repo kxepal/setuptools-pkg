@@ -1,0 +1,25 @@
+*.py[cod]
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+.cache
+.eggs
+bin
+build
+dist
+sdist
+
+# Unit test / coverage reports
+.coverage
+cover/
+htmlcov/
+
+# IDE
+.idea
+
+# Develop
+venv
