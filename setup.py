@@ -51,7 +51,10 @@ setup(
     ],
 
     install_requires=[
-        'setuptools',  # TODO: can we be sure about setuptools stability?
+        'setuptools>=21',
+    ],
+    tests_require=[
+        'mock==2.0.0; python_version<"3.3"',
     ],
     entry_points={
         "distutils.commands": [
