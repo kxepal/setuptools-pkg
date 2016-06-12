@@ -7,6 +7,7 @@
 # you should have received as part of this distribution.
 #
 
+import hashlib
 import os
 import platform
 
@@ -156,6 +157,8 @@ class bdist_pkg(Command):
 
     def run(self):
         self.build_and_install()
+        manifest = self.generate_manifest_content()
+        [manifest]
 
     def build_and_install(self):
         # Basically, we need the intermediate results of bdist_dumb,
@@ -167,6 +170,42 @@ class bdist_pkg(Command):
         install.root = self.install_dir
         install.warn_dir = 0
         self.run_command('install')
+
+    def generate_manifest_content(self):
+        manifest = {
+            'abi': self.abi,
+            'arch': self.arch,
+            'categories': self.categories,
+            'comment': self.comment,
+            'desc': self.desc,
+            'directories': {},
+            'files': {},
+            'flatsize': 0,
+            'licenselogic': 'single',
+            'licenses': [self.license] if self.license else [],
+            'maintainer': self.maintainer,
+            'name': self.name,
+            'origin': self.origin,
+            'prefix': self.prefix,
+            'version': self.version,
+            'www': self.www,
+        }
+
+        mdirs = manifest['directories']
+        mfiles = manifest['files']
+        for root, dirs, files in os.walk(self.install_root):
+            for file in files:
+                reldir = os.path.relpath(root, self.install_root)
+                fpath = '/' + os.path.join(reldir, file)
+                with open(os.path.join(root, file), 'rb') as fh:
+                    data = fh.read()
+                    manifest['flatsize'] += len(data)
+                    mdirs[os.path.dirname(fpath)] = 'y'
+                    mfiles[fpath] = hashlib.sha256(data).hexdigest()
+
+        # TODO: Should we keep UNKNOWN values?
+        return {key: value for key, value in manifest.items()
+                if value and value != 'UNKOWN'}
 
     def get_abi(self):
         system = platform.system()
