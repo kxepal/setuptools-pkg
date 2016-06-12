@@ -15,15 +15,22 @@ __all__ = (
 
 
 class bdist_pkg(Command):
-    description = "create FreeBSD pkg distribution"
+    description = 'create FreeBSD pkg distribution'
 
-    user_options = []
+    user_options = [
+        ('bdist-base=', 'b',
+         'base directory for creating built distributions'),
+        ('dist-dir=', 'd',
+         'directory to put distribute files in'),
+    ]
 
     def initialize_options(self):
-        pass
+        self.bdist_base = None
+        self.dist_dir = None
 
     def finalize_options(self):
-        pass
+        self.set_undefined_options('bdist', ('bdist_base', 'bdist_base'))
+        self.set_undefined_options('bdist', ('dist_dir', 'dist_dir'))
 
     def run(self):
         pass
