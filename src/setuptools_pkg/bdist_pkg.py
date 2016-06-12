@@ -7,6 +7,7 @@
 # you should have received as part of this distribution.
 #
 
+import os
 import platform
 
 from setuptools import Command
@@ -134,6 +135,8 @@ class bdist_pkg(Command):
     def finalize_options(self):
         self.set_undefined_options('bdist', ('bdist_base', 'bdist_base'))
         self.set_undefined_options('bdist', ('dist_dir', 'dist_dir'))
+        self.bdist_dir = os.path.join(self.bdist_base, 'pkg')
+        self.install_dir = os.path.join(self.bdist_dir, 'root')
         self.finalize_manifest_options()
 
     def finalize_manifest_options(self):
@@ -152,7 +155,18 @@ class bdist_pkg(Command):
         self.ensure_string('www', project.get_url())
 
     def run(self):
-        pass
+        self.build_and_install()
+
+    def build_and_install(self):
+        # Basically, we need the intermediate results of bdist_dumb,
+        # but since it's too monolithic and does the stuff that we would like
+        # to avoid, here short copy-paste happens /:
+        self.run_command('build')
+        install = self.reinitialize_command('install', reinit_subcommands=1)
+        install.prefix = self.prefix
+        install.root = self.install_dir
+        install.warn_dir = 0
+        self.run_command('install')
 
     def get_abi(self):
         system = platform.system()
