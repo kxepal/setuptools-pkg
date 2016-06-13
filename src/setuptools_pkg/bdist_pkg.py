@@ -209,15 +209,12 @@ class bdist_pkg(Command):
 
         mdirs = manifest['directories']
         mfiles = manifest['files']
-        for root, dirs, files in os.walk(self.install_root):
-            for file in files:
-                reldir = os.path.relpath(root, self.install_root)
-                fpath = '/' + os.path.join(reldir, file)
-                with open(os.path.join(root, file), 'rb') as fh:
-                    data = fh.read()
-                    manifest['flatsize'] += len(data)
-                    mdirs[os.path.dirname(fpath)] = 'y'
-                    mfiles[fpath] = hashlib.sha256(data).hexdigest()
+        for real_file_path, install_path in self.iter_install_files():
+            with open(real_file_path, 'rb') as fh:
+                data = fh.read()
+                manifest['flatsize'] += len(data)
+                mdirs[os.path.dirname(install_path)] = 'y'
+                mfiles[install_path] = hashlib.sha256(data).hexdigest()
 
         # TODO: Should we keep UNKNOWN values?
         return {key: value for key, value in manifest.items()
@@ -244,11 +241,8 @@ class bdist_pkg(Command):
                     arcname=os.path.basename(manifest_path))
             tar.add(compact_manifest_path,
                     arcname=os.path.basename(compact_manifest_path))
-            for root, dirs, files in os.walk(self.install_root):
-                for file in files:
-                    reldir = os.path.relpath(root, self.install_root)
-                    fpath = '/' + os.path.join(reldir, file)
-                    tar.add(os.path.join(root, file), arcname=fpath)
+            for real_file_path, install_path in self.iter_install_files():
+                tar.add(real_file_path, arcname=install_path)
 
         if self.format != 'tar':
             compressor = {
@@ -331,3 +325,10 @@ class bdist_pkg(Command):
             self.warn('Unknown format {!r}, falling back to txz'
                       ''.format(self.format))
             self.format = 'txz'
+
+    def iter_install_files(self):
+        for root, dirs, files in os.walk(self.install_dir):
+            for file in files:
+                reldir = os.path.relpath(root, self.install_dir)
+                install_path = '/' + os.path.join(reldir, file)
+                yield os.path.join(root, file), install_path
