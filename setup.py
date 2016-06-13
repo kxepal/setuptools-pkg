@@ -52,6 +52,7 @@ setup(
 
     install_requires=[
         'setuptools>=21',
+        'backports.lzma==0.0.6; python_version<"3.3"',
     ],
     tests_require=[
         'mock==2.0.0; python_version<"3.3"',

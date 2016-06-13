@@ -7,11 +7,21 @@
 # you should have received as part of this distribution.
 #
 
+import bz2
+import gzip
 import hashlib
+import json
 import os
 import platform
+import tarfile
 
 from setuptools import Command
+
+try:
+    import lzma
+except ImportError:
+    import backports.lzma as lzma
+
 
 __all__ = (
     'bdist_pkg',
@@ -26,11 +36,16 @@ class bdist_pkg(Command):
          'base directory for creating built distributions'),
         ('dist-dir=', 'd',
          'directory to put distribute files in'),
+        ('format=', 'f',
+         'Set format as the package output format.  It can be one'
+         ' of txz, tbz, tgz or tar.  If an invalid or no format is specified'
+         ' txz is assumed.'),
     ]
 
     def initialize_options(self):
         self.bdist_base = None
         self.dist_dir = None
+        self.format = None
         self.initialize_manifest_options()
 
     def initialize_manifest_options(self):
@@ -136,6 +151,7 @@ class bdist_pkg(Command):
     def finalize_options(self):
         self.set_undefined_options('bdist', ('bdist_base', 'bdist_base'))
         self.set_undefined_options('bdist', ('dist_dir', 'dist_dir'))
+        self.ensure_format()
         self.bdist_dir = os.path.join(self.bdist_base, 'pkg')
         self.install_dir = os.path.join(self.bdist_dir, 'root')
         self.finalize_manifest_options()
@@ -158,7 +174,7 @@ class bdist_pkg(Command):
     def run(self):
         self.build_and_install()
         manifest = self.generate_manifest_content()
-        [manifest]
+        self.make_pkg(manifest)
 
     def build_and_install(self):
         # Basically, we need the intermediate results of bdist_dumb,
@@ -206,6 +222,43 @@ class bdist_pkg(Command):
         # TODO: Should we keep UNKNOWN values?
         return {key: value for key, value in manifest.items()
                 if value and value != 'UNKOWN'}
+
+    def make_pkg(self, manifest):
+        manifest_path = os.path.join(self.bdist_dir,
+                                     '+MANIFEST')
+        compact_manifest_path = os.path.join(self.bdist_dir,
+                                             '+COMPACT_MANIFEST')
+        with open(manifest_path, 'w') as fobj:
+            json.dump(manifest, fobj, sort_keys=True, indent=4)
+
+        compact_manifest = manifest.copy()
+        compact_manifest.pop('directories')
+        compact_manifest.pop('files')
+        with open(compact_manifest_path, 'w') as fobj:
+            json.dump(compact_manifest, fobj, sort_keys=True, indent=4)
+
+        basename = '{}-{}'.format(self.name, self.version)
+        basepath = os.path.join(self.dist_dir, basename)
+        with tarfile.open(basepath + '.tar', 'w') as tar:
+            tar.add(manifest_path,
+                    arcname=os.path.basename(manifest_path))
+            tar.add(compact_manifest_path,
+                    arcname=os.path.basename(compact_manifest_path))
+            for root, dirs, files in os.walk(self.install_root):
+                for file in files:
+                    reldir = os.path.relpath(root, self.install_root)
+                    fpath = '/' + os.path.join(reldir, file)
+                    tar.add(os.path.join(root, file), arcname=fpath)
+
+        if self.format != 'tar':
+            compressor = {
+                'txz': lzma,
+                'tgz': gzip,
+                'tbz': bz2,
+            }[self.format]
+            with compressor.open(basepath + '.' + self.format, 'w') as txx:
+                with open(basepath + '.tar', 'rb') as tar:
+                    txx.write(tar.read())
 
     def get_abi(self):
         system = platform.system()
@@ -271,3 +324,10 @@ class bdist_pkg(Command):
             self.warn('Unable to convert license %s to PKG naming' % license)
             return license
         return pkg_license
+
+    def ensure_format(self):
+        self.ensure_string('format', 'txz')
+        if self.format not in {'txz', 'tbz', 'tgz', 'tar'}:
+            self.warn('Unknown format {!r}, falling back to txz'
+                      ''.format(self.format))
+            self.format = 'txz'
