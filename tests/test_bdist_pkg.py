@@ -194,6 +194,12 @@ class BdistPkgInit(unittest.TestCase):
         cmd.finalize_options()
         self.assertEqual(cmd.prefix, '/usr/local')
 
+    def test_prefix_strip_trailing_slash(self):
+        cmd = bdist_pkg(Distribution({}))
+        cmd.prefix = '/tmp/foo/bar/'
+        cmd.finalize_options()
+        self.assertEqual(cmd.prefix, '/tmp/foo/bar')
+
     def test_version(self):
         cmd = bdist_pkg(Distribution({'version': '1.0.1'}))
         cmd.finalize_options()

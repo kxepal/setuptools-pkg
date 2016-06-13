@@ -167,7 +167,7 @@ class bdist_pkg(Command):
         self.ensure_string('maintainer', self.get_maintainer(project))
         self.ensure_string('name', project.get_name())
         self.ensure_string('origin', 'devel/py-' + project.get_name())
-        self.ensure_string('prefix', '/usr/local')
+        self.ensure_prefix('/usr/local')
         self.ensure_string('version', project.get_version())
         self.ensure_string('www', project.get_url())
 
@@ -193,6 +193,7 @@ class bdist_pkg(Command):
             'arch': self.arch,
             'categories': self.categories,
             'comment': self.comment,
+            'deps': {},
             'desc': self.desc,
             'directories': {},
             'files': {},
@@ -326,9 +327,15 @@ class bdist_pkg(Command):
                       ''.format(self.format))
             self.format = 'txz'
 
+    def ensure_prefix(self, default=None):
+        self.ensure_string('prefix', default)
+        self.prefix = self.prefix.rstrip('/')
+
     def iter_install_files(self):
         for root, dirs, files in os.walk(self.install_dir):
             for file in files:
                 reldir = os.path.relpath(root, self.install_dir)
                 install_path = '/' + os.path.join(reldir, file)
+                install_path = install_path.replace(self.prefix + '/lib64/',
+                                                    self.prefix + '/lib/')
                 yield os.path.join(root, file), install_path
