@@ -14,6 +14,7 @@ import json
 import os
 import platform
 import tarfile
+from distutils.errors import DistutilsOptionError
 
 from setuptools import Command
 
@@ -256,11 +257,14 @@ class bdist_pkg(Command):
                     txx.write(tar.read())
 
     def get_abi(self):
-        system = platform.system()
-        if system.lower() != 'freebsd':
-            self.warn('Unable to determine default ABI value'
-                      ' since bdist_pkg call happens not on FreeBSD system.'
-                      ' Fallback to * value.')
+        if platform.system().lower() != 'freebsd':
+            if not self.distribution.is_pure():
+                raise DistutilsOptionError(
+                    'Unable to determine default ABI value'
+                    ' since bdist_pkg call happens not on FreeBSD system.'
+                    ' Please specify this value according the target system'
+                    ' for which you build this package.'
+                )
             return '*'
         return ':'.join((
             platform.system(),
@@ -272,9 +276,13 @@ class bdist_pkg(Command):
 
     def get_arch(self):
         if platform.system().lower() != 'freebsd':
-            self.warn('Unable to determine default ARCH value'
-                      ' since bdist_pkg call happens not on FreeBSD system.'
-                      ' Fallback to * value.')
+            if not self.distribution.is_pure():
+                raise DistutilsOptionError(
+                    'Unable to determine default ARCH value'
+                    ' since bdist_pkg call happens not on FreeBSD system.'
+                    ' Please specify this value according the target system'
+                    ' for which you build this package.'
+                )
             return '*'
         return ':'.join((
             platform.system(),

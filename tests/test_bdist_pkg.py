@@ -9,6 +9,7 @@
 
 import os
 import unittest
+from distutils.errors import DistutilsOptionError
 from distutils.util import get_platform
 
 from setuptools import Distribution
@@ -24,11 +25,18 @@ except ImportError:
 class BdistPkgInit(unittest.TestCase):
 
     def setUp(self):
-        self._orig_warn = bdist_pkg.warn
-        bdist_pkg.warn = lambda self, msg: None
+        self.machine = mock.patch('platform.machine')
+        self.machine.start().return_value = 'amd64'
+        self.release = mock.patch('platform.release')
+        self.release.start().return_value = '10.1-STABLE-r273058'
+        self.system = mock.patch('platform.system')
+        self.system_fn = self.system.start()
+        self.system_fn.return_value = 'freebsd'
 
     def tearDown(self):
-        bdist_pkg.warn = self._orig_warn
+        self.machine.stop()
+        self.release.stop()
+        self.system.stop()
 
     def test_bdist_base(self):
         cmd = bdist_pkg(Distribution({}))
@@ -43,49 +51,35 @@ class BdistPkgInit(unittest.TestCase):
         cmd.finalize_options()
         self.assertEqual(cmd.dist_dir, 'dist')
 
-    @mock.patch('platform.machine')
-    @mock.patch('platform.release')
-    @mock.patch('platform.system')
-    def test_abi_on_freebsd(self, system, release, machine):
-        system.return_value = 'freebsd'
-        release.return_value = '10.1-STABLE-r273058'
-        machine.return_value = 'amd64'
-
+    def test_abi_on_freebsd(self):
         cmd = bdist_pkg(Distribution({}))
         self.assertIsNone(cmd.abi)
         cmd.finalize_options()
         self.assertEqual(cmd.abi, 'freebsd:10:amd64')
 
-    @mock.patch('platform.system')
-    def test_abi_on_else(self, system):
-        system.return_value = 'linux'
+    def test_abi_on_else(self):
+        self.system_fn.return_value = 'linux'
 
         cmd = bdist_pkg(Distribution({}))
+        cmd.arch = 'freebsd:10:x86'
         self.assertIsNone(cmd.abi)
-        cmd.finalize_options()
-        self.assertEqual(cmd.abi, '*')
+        with self.assertRaises(DistutilsOptionError):
+            cmd.finalize_options()
 
-    @mock.patch('platform.machine')
-    @mock.patch('platform.release')
-    @mock.patch('platform.system')
-    def test_arch_on_freebsd(self, system, release, machine):
-        system.return_value = 'freebsd'
-        release.return_value = '10.1-STABLE-r273058'
-        machine.return_value = 'amd64'
-
+    def test_arch_on_freebsd(self):
         cmd = bdist_pkg(Distribution({}))
         self.assertIsNone(cmd.arch)
         cmd.finalize_options()
         self.assertEqual(cmd.arch, 'freebsd:10:x86:64')
 
-    @mock.patch('platform.system')
-    def test_arch_on_else(self, system):
-        system.return_value = 'linux'
+    def test_arch_on_else(self):
+        self.system_fn.return_value = 'linux'
 
         cmd = bdist_pkg(Distribution({}))
+        cmd.abi = 'freebsd:10:amd64'
         self.assertIsNone(cmd.arch)
-        cmd.finalize_options()
-        self.assertEqual(cmd.arch, '*')
+        with self.assertRaises(DistutilsOptionError):
+            cmd.finalize_options()
 
     def test_categories(self):
         cmd = bdist_pkg(Distribution({'keywords': ['foo', 'bar', 'baz']}))
