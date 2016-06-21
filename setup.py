@@ -52,7 +52,6 @@ setup(
 
     install_requires=[
         'setuptools>=21',
-        'backports.lzma==0.0.6; python_version<"3.3"',
     ],
     tests_require=[
         'mock==2.0.0; python_version<"3.3"',
@@ -60,6 +59,11 @@ setup(
     entry_points={
         "distutils.commands": [
             "bdist_pkg = setuptools_pkg.bdist_pkg:bdist_pkg",
+        ],
+    },
+    extras_require={
+        'lzma': [
+            'backports.lzma==0.0.6; python_version<"3.3"',
         ],
     },
 )

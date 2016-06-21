@@ -21,7 +21,10 @@ from setuptools import Command
 try:
     import lzma
 except ImportError:
-    import backports.lzma as lzma
+    try:
+        import backports.lzma as lzma
+    except ImportError:
+        lzma = None
 
 
 __all__ = (
@@ -40,7 +43,7 @@ class bdist_pkg(Command):
         ('format=', 'f',
          'Set format as the package output format.  It can be one'
          ' of txz, tbz, tgz or tar.  If an invalid or no format is specified'
-         ' txz is assumed.'),
+         ' tgz is assumed.'),
     ]
 
     def initialize_options(self):
@@ -152,7 +155,7 @@ class bdist_pkg(Command):
     def finalize_options(self):
         self.set_undefined_options('bdist', ('bdist_base', 'bdist_base'))
         self.set_undefined_options('bdist', ('dist_dir', 'dist_dir'))
-        self.ensure_format()
+        self.ensure_format('tgz')
         self.bdist_dir = os.path.join(self.bdist_base, 'pkg')
         self.install_dir = os.path.join(self.bdist_dir, 'root')
         self.finalize_manifest_options()
@@ -252,6 +255,9 @@ class bdist_pkg(Command):
                 'tgz': gzip,
                 'tbz': bz2,
             }[self.format]
+            if compressor is None:
+                raise RuntimeError('Format {} is not supported'
+                                   ''.format(self.format))
             with compressor.open(basepath + '.' + self.format, 'w') as txx:
                 with open(basepath + '.tar', 'rb') as tar:
                     txx.write(tar.read())
@@ -328,12 +334,12 @@ class bdist_pkg(Command):
             return license
         return pkg_license
 
-    def ensure_format(self):
-        self.ensure_string('format', 'txz')
+    def ensure_format(self, default):
+        self.ensure_string('format', default)
         if self.format not in {'txz', 'tbz', 'tgz', 'tar'}:
-            self.warn('Unknown format {!r}, falling back to txz'
-                      ''.format(self.format))
-            self.format = 'txz'
+            self.warn('Unknown format {!r}, falling back to {}'
+                      ''.format(self.format, default))
+            self.format = default
 
     def ensure_prefix(self, default=None):
         self.ensure_string('prefix', default)
