@@ -66,4 +66,14 @@ setup(
             'backports.lzma==0.0.6; python_version<"3.3"',
         ],
     },
+    command_options={
+        'bdist_pkg': {
+            'requirements_mapping': (__file__, {
+                ('setuptools>=21', 'py-setuptools'): {
+                    'origin': 'devel/py-setuptools',
+                    'version': '21.0'
+                },
+            })
+        }
+    },
 )

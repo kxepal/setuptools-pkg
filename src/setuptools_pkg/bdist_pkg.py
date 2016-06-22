@@ -50,6 +50,7 @@ class bdist_pkg(Command):
         self.bdist_base = None
         self.dist_dir = None
         self.format = None
+        self.requirements_mapping = None
         self.initialize_manifest_options()
 
     def initialize_manifest_options(self):
@@ -74,8 +75,7 @@ class bdist_pkg(Command):
         # TODO: What is it and how to use it?
         # self.dep_formula = None
 
-        # TODO: Need autogenerate deps from install requirements
-        # self.deps = None
+        self.deps = None
 
         # A longer description of the package.
         # Like long_description.
@@ -174,10 +174,14 @@ class bdist_pkg(Command):
         self.ensure_prefix('/usr/local')
         self.ensure_string('version', project.get_version())
         self.ensure_string('www', project.get_url())
+        self.ensure_deps()
 
     def run(self):
         self.build_and_install()
         manifest = self.generate_manifest_content()
+        compact_manifest = manifest.copy()
+        compact_manifest.pop('directories')
+        compact_manifest.pop('files')
         self.make_pkg(manifest)
 
     def build_and_install(self):
@@ -197,7 +201,7 @@ class bdist_pkg(Command):
             'arch': self.arch,
             'categories': self.categories,
             'comment': self.comment,
-            'deps': {},
+            'deps': self.deps,
             'desc': self.desc,
             'directories': {},
             'files': {},
@@ -344,6 +348,38 @@ class bdist_pkg(Command):
     def ensure_prefix(self, default=None):
         self.ensure_string('prefix', default)
         self.prefix = self.prefix.rstrip('/')
+
+    def ensure_deps(self):
+        install_requires = set(self.distribution.install_requires or [])
+        mapping = self.requirements_mapping or {}
+        self.deps = self.deps or {}
+
+        seen_deps = set([])
+        for (python_dep, pkg_dep), spec in mapping.items():
+            if python_dep not in install_requires:
+                raise DistutilsOptionError('{} is not in install requires list'
+                                           ''.format(python_dep))
+
+            if not isinstance(spec, dict):
+                raise DistutilsOptionError('requirements_mapping items must be'
+                                           ' dict, got {}'.format(repr(spec)))
+            if set(spec) != {'origin', 'version'}:
+                raise DistutilsOptionError('requirements_mapping items must'
+                                           ' have "origin" and "version" keys,'
+                                           ' got {}'.format(set(spec)))
+            for key in {'origin', 'version'}:
+                if not isinstance(spec[key], str):
+                    raise DistutilsOptionError('"{}" value must be string, got'
+                                               ' {}'.format(key, spec[key]))
+            self.deps[pkg_dep] = spec
+            seen_deps.add(python_dep)
+
+        missing = seen_deps ^ install_requires
+        if missing:
+            raise DistutilsOptionError('These packages are listed in install'
+                                       ' requirements, but not in bdist_pkg'
+                                       ' requirements mapping: {}'
+                                       ''.format(', '.join(missing)))
 
     def iter_install_files(self):
         for root, dirs, files in os.walk(self.install_dir):
