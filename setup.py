@@ -8,17 +8,29 @@
 #
 import os
 from setuptools import find_packages, setup
+from setuptools.command.sdist import sdist as sdist_orig
 
 
 # Python project version is a well known place where wheels get reinvented
 # again and again. This one is not an exception.
-
-# We'll use git for picking package version. It can generate pretty nice
-# versino numbers based on tags and distance to them.
-__version__ = os.popen('git describe --tags --always').read().strip()
+if os.path.exists('VERSION'):
+    # The VERSION file contains full project version to use.
+    with open('VERSION') as verfile:
+        __version__ = verfile.read().strip()
+else:
+    # For every else cases we use git for the version info.
+    __version__ = os.popen('git describe --tags --always').read().strip()
 if not __version__:
     # However, things can go wrong, so we'll cry for help here.
     raise RuntimeError('cannot detect project version')
+
+
+class sdist(sdist_orig):
+
+    def run(self):
+        with open('VERSION', 'w') as fobj:
+            fobj.write(__version__)
+        super(sdist, self).run()
 
 
 setup(
@@ -75,5 +87,8 @@ setup(
                 },
             })
         }
+    },
+    cmdclass={
+        'sdist': sdist
     },
 )
