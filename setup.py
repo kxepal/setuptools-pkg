@@ -65,10 +65,10 @@ setup(
     ],
 
     install_requires=[
-        'setuptools>=21',
+        'setuptools>=18.2',
     ],
     tests_require=[
-        'mock==2.0.0; python_version<"3.3"',
+        'mock==2.0.0',
     ],
     entry_points={
         "distutils.commands": [
@@ -76,16 +76,16 @@ setup(
         ],
     },
     extras_require={
-        'lzma': [
-            'backports.lzma==0.0.6; python_version<"3.3"',
+        'lzma-2.7': [
+            'backports.lzma==0.0.6',
         ],
     },
     command_options={
         'bdist_pkg': {
             'requirements_mapping': (__file__, {
-                ('setuptools>=21', 'py-setuptools'): {
+                ('setuptools>=18.2', 'py-setuptools'): {
                     'origin': 'devel/py-setuptools',
-                    'version': '21.0'
+                    'version': '20.0'
                 },
             })
         }
