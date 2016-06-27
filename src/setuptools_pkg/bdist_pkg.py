@@ -245,6 +245,7 @@ class bdist_pkg(Command):
 
         basename = '{}-{}'.format(self.name, self.version)
         basepath = os.path.join(self.dist_dir, basename)
+        self.mkpath(self.dist_dir)
         with tarfile.open(basepath + '.tar', 'w') as tar:
             tar.add(manifest_path,
                     arcname=os.path.basename(manifest_path))
