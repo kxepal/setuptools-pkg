@@ -15,6 +15,7 @@ import os
 import platform
 import tarfile
 from distutils.errors import DistutilsOptionError
+from itertools import chain
 
 from setuptools import Command
 
@@ -45,6 +46,12 @@ class bdist_pkg(Command):
          ' of txz, tbz, tgz or tar.  If an invalid or no format is specified'
          ' tgz is assumed.'),
     ]
+
+    compressor_for_format = {
+        'txz': lzma,
+        'tgz': gzip,
+        'tbz': bz2,
+    }
 
     def initialize_options(self):
         self.bdist_base = None
@@ -230,42 +237,55 @@ class bdist_pkg(Command):
                 if value and value != 'UNKOWN'}
 
     def make_pkg(self, manifest):
-        manifest_path = os.path.join(self.bdist_dir,
-                                     '+MANIFEST')
-        compact_manifest_path = os.path.join(self.bdist_dir,
-                                             '+COMPACT_MANIFEST')
-        with open(manifest_path, 'w') as fobj:
-            json.dump(manifest, fobj, sort_keys=True, indent=4)
+        manifest_path = self.make_manifest(manifest)
+        compact_manifest_path = self.make_compact_manifest(manifest)
+        files_paths = chain([
+            (manifest_path, os.path.basename(manifest_path)),
+            (compact_manifest_path, os.path.basename(compact_manifest_path))
+        ], self.iter_install_files())
 
-        compact_manifest = manifest.copy()
-        compact_manifest.pop('directories')
-        compact_manifest.pop('files')
-        with open(compact_manifest_path, 'w') as fobj:
-            json.dump(compact_manifest, fobj, sort_keys=True, indent=4)
-
-        basename = '{}-{}'.format(self.name, self.version)
-        basepath = os.path.join(self.dist_dir, basename)
         self.mkpath(self.dist_dir)
-        with tarfile.open(basepath + '.tar', 'w') as tar:
-            tar.add(manifest_path,
-                    arcname=os.path.basename(manifest_path))
-            tar.add(compact_manifest_path,
-                    arcname=os.path.basename(compact_manifest_path))
-            for real_file_path, install_path in self.iter_install_files():
-                tar.add(real_file_path, arcname=install_path)
+        tar_path = self.make_tar(files_paths)
 
-        if self.format != 'tar':
-            compressor = {
-                'txz': lzma,
-                'tgz': gzip,
-                'tbz': bz2,
-            }[self.format]
+        ext = self.format
+        if ext != 'tar':
+            compressor = self.get_compressor(ext)
             if compressor is None:
-                raise RuntimeError('Format {} is not supported'
-                                   ''.format(self.format))
-            with compressor.open(basepath + '.' + self.format, 'w') as txx:
-                with open(basepath + '.tar', 'rb') as tar:
-                    txx.write(tar.read())
+                raise RuntimeError('Format {} is not supported'.format(ext))
+            self.compress_tar(tar_path, ext, compressor)
+
+    def make_manifest(self, content):
+        path = os.path.join(self.bdist_dir, '+MANIFEST')
+        with open(path, 'w') as fobj:
+            json.dump(content, fobj, sort_keys=True, indent=4)
+        return path
+
+    def make_compact_manifest(self, content):
+        path = os.path.join(self.bdist_dir, '+COMPACT_MANIFEST')
+        compact_content = content.copy()
+        compact_content.pop('directories')
+        compact_content.pop('files')
+        with open(path, 'w') as fobj:
+            json.dump(compact_content, fobj, sort_keys=True, indent=4)
+        return path
+
+    def make_tar(self, files_paths):
+        basename = '{}-{}.tar'.format(self.name, self.version)
+        path = os.path.join(self.dist_dir, basename)
+        with tarfile.open(path, 'w') as tar:
+            for file_path, tar_path in files_paths:
+                tar.add(file_path, arcname=tar_path)
+        return path
+
+    def compress_tar(self, tar_path, ext, compressor):
+        txx_path = tar_path.rsplit('.tar', 1)[0] + '.' + ext
+        with compressor.open(txx_path, 'w') as txx:
+            with open(tar_path, 'rb') as tar:
+                txx.write(tar.read())
+        return txx_path
+
+    def get_compressor(self, format):
+        return self.compressor_for_format.get(format)
 
     def get_abi(self):
         if platform.system().lower() != 'freebsd':
