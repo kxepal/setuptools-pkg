@@ -274,7 +274,10 @@ class bdist_pkg(Command):
         path = os.path.join(self.dist_dir, basename)
         with tarfile.open(path, 'w') as tar:
             for file_path, tar_path in files_paths:
-                tar.add(file_path, arcname=tar_path)
+                tarinfo = tar.gettarinfo(file_path, tar_path)
+                tarinfo.name = tar_path
+                with open(file_path, 'rb') as f:
+                    tar.addfile(tarinfo, f)
         return path
 
     def compress_tar(self, tar_path, ext, compressor):
