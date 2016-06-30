@@ -58,6 +58,7 @@ class bdist_pkg(Command):
         self.dist_dir = None
         self.format = None
         self.requirements_mapping = None
+        self.selected_options = None
         self.initialize_manifest_options()
 
     def initialize_manifest_options(self):
@@ -115,8 +116,12 @@ class bdist_pkg(Command):
         # the custom name can be used instead of real project one.
         self.name = None
 
-        # TODO: Fill the options from extras.
-        # self.options = None
+        # PKG options are basically extras and maps directly to them.
+        self.options = None
+        self.selected_options = None
+
+        # Since we use extras, which don't have either defaults or descriptions
+        # these fields are not supported so far:
         # self.options_defaults = None
         # self.options_descriptions = None
 
@@ -181,6 +186,7 @@ class bdist_pkg(Command):
         self.ensure_prefix('/usr/local')
         self.ensure_string('version', project.get_version())
         self.ensure_string('www', project.get_url())
+        self.ensure_options()
         self.ensure_deps()
 
     def run(self):
@@ -217,6 +223,7 @@ class bdist_pkg(Command):
             'licenses': [self.license] if self.license else [],
             'maintainer': self.maintainer,
             'name': self.name,
+            'options': self.options,
             'origin': self.origin,
             'prefix': self.prefix,
             'version': self.version,
@@ -375,6 +382,8 @@ class bdist_pkg(Command):
 
     def ensure_deps(self):
         install_requires = set(self.distribution.install_requires or [])
+        for option in self.selected_options:
+            install_requires |= set(self.distribution.extras_require[option])
         mapping = self.requirements_mapping or {}
         self.deps = self.deps or {}
 
@@ -404,6 +413,17 @@ class bdist_pkg(Command):
                                        ' requirements, but not in bdist_pkg'
                                        ' requirements mapping: {}'
                                        ''.format(', '.join(missing)))
+
+    def ensure_options(self):
+        provided_options = set(self.distribution.extras_require or {})
+        self.selected_options = set(self.selected_options or [])
+        unknown_options = self.selected_options - provided_options
+        if not unknown_options:
+            self.options = {option: option in self.selected_options
+                            for option in provided_options}
+        else:
+            raise DistutilsOptionError('Unknown extras selected: {}'
+                                       ''.format(', '.join(unknown_options)))
 
     def iter_install_files(self):
         for root, dirs, files in os.walk(self.install_dir):
