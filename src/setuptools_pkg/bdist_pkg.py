@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import platform
+import sys
 import tarfile
 from distutils.errors import DistutilsOptionError
 from itertools import chain
@@ -182,7 +183,7 @@ class bdist_pkg(Command):
         self.ensure_string('license', self.resolve_license(project))
         self.ensure_string('maintainer', self.get_maintainer(project))
         self.ensure_string('name', project.get_name())
-        self.ensure_string('origin', 'devel/py-' + project.get_name())
+        self.ensure_string('origin', self.get_default_origin(project))
         self.ensure_prefix('/usr/local')
         self.ensure_string('version', project.get_version())
         self.ensure_string('www', project.get_url())
@@ -332,6 +333,12 @@ class bdist_pkg(Command):
             # TODO: shouldn't there be a better way?
             'x86:64' if platform.machine() == 'amd64' else 'x86:32'
         ))
+
+    def get_default_origin(self, project):
+        return 'devel/py{}{}-{}'.format(sys.version_info[0],
+                                        sys.version_info[1],
+                                        project.get_name())
+
 
     def get_maintainer(self, project):
         maintainer = '{} <{}>'.format(project.get_maintainer(),

@@ -8,6 +8,7 @@
 #
 
 import os
+import sys
 import unittest
 from distutils.errors import DistutilsOptionError
 from distutils.util import get_platform
@@ -171,10 +172,13 @@ class BdistPkgInit(unittest.TestCase):
         self.assertEqual(cmd.origin, 'misc/python')
 
     def test_origin_not_set(self):
-        cmd = bdist_pkg(Distribution({}))
+        dist = Distribution({'name': 'test'})
+        pyver = ''.join(map(str, sys.version_info[:2]))
+        cmd = bdist_pkg(dist)
         self.assertIsNone(cmd.origin)
         cmd.finalize_options()
-        self.assertEqual(cmd.origin, 'lang/python')
+        self.assertEqual(cmd.origin,
+                         'devel/py{}-{}'.format(pyver, dist.metadata.name))
 
     def test_prefix(self):
         cmd = bdist_pkg(Distribution({}))
