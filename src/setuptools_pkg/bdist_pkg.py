@@ -193,9 +193,6 @@ class bdist_pkg(Command):
     def run(self):
         self.build_and_install()
         manifest = self.generate_manifest_content()
-        compact_manifest = manifest.copy()
-        compact_manifest.pop('directories')
-        compact_manifest.pop('files')
         self.make_pkg(manifest)
 
     def build_and_install(self):
