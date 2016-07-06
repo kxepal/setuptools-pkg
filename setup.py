@@ -7,9 +7,9 @@
 # you should have received as part of this distribution.
 #
 import os
+
 from setuptools import find_packages, setup
 from setuptools.command.sdist import sdist as sdist_orig
-
 
 # Python project version is a well known place where wheels get reinvented
 # again and again. This one is not an exception.
@@ -83,7 +83,8 @@ setup(
     command_options={
         'bdist_pkg': {
             'requirements_mapping': (__file__, {
-                ('setuptools>=18.2', 'py-setuptools'): {
+                'setuptools>=18.2': {
+                    'name': 'py-setuptools',
                     'origin': 'devel/py-setuptools',
                     'version': '20.0'
                 },

@@ -392,7 +392,11 @@ class bdist_pkg(Command):
         self.deps = self.deps or {}
 
         seen_deps = set([])
-        for (python_dep, pkg_dep), spec in mapping.items():
+        for python_dep, spec in mapping.items():
+            if not isinstance(python_dep, str):
+                raise DistutilsOptionError('Invalid Python dependency: {}'
+                                           ''.format(python_dep))
+
             if python_dep not in install_requires:
                 raise DistutilsOptionError('{} is not in install requires list'
                                            ''.format(python_dep))
@@ -400,15 +404,17 @@ class bdist_pkg(Command):
             if not isinstance(spec, dict):
                 raise DistutilsOptionError('requirements_mapping items must be'
                                            ' dict, got {}'.format(repr(spec)))
-            if set(spec) != {'origin', 'version'}:
+            if set(spec) != {'origin', 'version', 'name'}:
                 raise DistutilsOptionError('requirements_mapping items must'
                                            ' have "origin" and "version" keys,'
                                            ' got {}'.format(set(spec)))
-            for key in {'origin', 'version'}:
+            for key in {'origin', 'version', 'name'}:
                 if not isinstance(spec[key], str):
                     raise DistutilsOptionError('"{}" value must be string, got'
                                                ' {}'.format(key, spec[key]))
-            self.deps[pkg_dep] = spec
+
+            self.deps[spec['name']] = {'origin': spec['origin'],
+                                       'version': spec['version']}
             seen_deps.add(python_dep)
 
         missing = seen_deps ^ install_requires
