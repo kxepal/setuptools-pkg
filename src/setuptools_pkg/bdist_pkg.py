@@ -239,7 +239,7 @@ class bdist_pkg(Command):
 
         # TODO: Should we keep UNKNOWN values?
         return {key: value for key, value in manifest.items()
-                if value and value != 'UNKOWN'}
+                if value and value != 'UNKNOWN'}
 
     def make_pkg(self, manifest):
         manifest_path = self.make_manifest(manifest)
