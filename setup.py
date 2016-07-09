@@ -76,6 +76,14 @@ setup(
         ],
     },
     extras_require={
+        'develop': [
+            'flake8==2.6.2',
+            'mock==2.0.0',
+            'pylint==1.6.1',
+            'pytest-cov==2.2.1',
+            'pytest-cov==2.2.1',
+            'pytest==2.9.2',
+        ],
         'lzma-2.7': [
             'backports.lzma==0.0.6',
         ],
