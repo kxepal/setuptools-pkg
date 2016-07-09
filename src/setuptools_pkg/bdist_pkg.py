@@ -238,8 +238,16 @@ class bdist_pkg(Command):
                 mfiles[install_path] = hashlib.sha256(data).hexdigest()
 
         # TODO: Should we keep UNKNOWN values?
-        return {key: value for key, value in manifest.items()
-                if value and value != 'UNKNOWN'}
+        manifest = {key: value for key, value in manifest.items()
+                    if value and value != 'UNKNOWN'}
+
+        if 'name' not in manifest:
+            raise DistutilsOptionError('Project must have name defined')
+
+        if 'version' not in manifest:
+            raise DistutilsOptionError('Project must have version defined')
+
+        return manifest
 
     def make_pkg(self, manifest):
         manifest_path = self.make_manifest(manifest)
