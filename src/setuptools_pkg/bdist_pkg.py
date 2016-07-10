@@ -177,7 +177,7 @@ class bdist_pkg(Command):
         project = self.distribution
         self.ensure_string('abi', self.get_abi())
         self.ensure_string('arch', self.get_arch())
-        self.ensure_string('categories', project.get_keywords())
+        self.ensure_categories(project)
         self.ensure_string('comment', project.get_description())
         self.ensure_string('desc', project.get_long_description())
         self.ensure_string('license', self.resolve_license(project))
@@ -391,6 +391,10 @@ class bdist_pkg(Command):
     def ensure_prefix(self, default=None):
         self.ensure_string('prefix', default)
         self.prefix = self.prefix.rstrip('/')
+
+    def ensure_categories(self, project):
+        self.categories = self.categories or project.get_keywords()
+        self.ensure_string_list('categories')
 
     def ensure_deps(self):
         install_requires = set(self.distribution.install_requires or [])
