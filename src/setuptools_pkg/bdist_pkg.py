@@ -344,7 +344,6 @@ class bdist_pkg(Command):
                                         sys.version_info[1],
                                         project.get_name())
 
-
     def get_maintainer(self, project):
         maintainer = '{} <{}>'.format(project.get_maintainer(),
                                       project.get_maintainer_email())
