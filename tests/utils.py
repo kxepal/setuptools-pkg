@@ -19,7 +19,7 @@ from setuptools_pkg.bdist_pkg import bdist_pkg
 
 try:
     import unittest.mock as mock
-except ImportError:
+except ImportError:  # pragma: no cover
     import mock
 
 
@@ -110,7 +110,7 @@ class TemporaryDirectory(object):
             warn_message="Implicitly cleaning up {!r}".format(self))
 
     @classmethod
-    def _cleanup(cls, name, warn_message):
+    def _cleanup(cls, name, warn_message):  # pragma: no cover
         shutil.rmtree(name)
         warnings.warn(warn_message, ResourceWarning)
 
@@ -123,6 +123,6 @@ class TemporaryDirectory(object):
     def __exit__(self, exc, value, tb):
         self.cleanup()
 
-    def cleanup(self):
+    def cleanup(self):  # pragma: no cover
         if self._finalizer.detach():
             shutil.rmtree(self.name)

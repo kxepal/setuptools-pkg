@@ -22,7 +22,7 @@ from setuptools import Command
 
 try:
     import lzma
-except ImportError:
+except ImportError:  # pragma: no cover
     try:
         import backports.lzma as lzma
     except ImportError:
