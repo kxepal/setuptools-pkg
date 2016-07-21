@@ -92,9 +92,9 @@ setup(
         'bdist_pkg': {
             'requirements_mapping': (__file__, {
                 'setuptools>=18.2': {
-                    'name': 'py-setuptools',
+                    'name': 'py27-setuptools',
                     'origin': 'devel/py-setuptools',
-                    'version': '20.0'
+                    'version': '23.1.0'
                 },
             })
         }
