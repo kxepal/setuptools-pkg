@@ -34,6 +34,10 @@ __all__ = (
 )
 
 
+def before_make_pkg_callback(install_dir):  # pragma: no cover
+    pass
+
+
 class bdist_pkg(Command):
     description = 'create FreeBSD pkg distribution'
 
@@ -56,6 +60,7 @@ class bdist_pkg(Command):
 
     def initialize_options(self):
         self.bdist_base = None
+        self.before_make_pkg_callback = before_make_pkg_callback
         self.dist_dir = None
         self.format = None
         self.requirements_mapping = None
@@ -139,11 +144,12 @@ class bdist_pkg(Command):
         self.ensure_string('www', project.get_url())
         self.ensure_options()
         self.ensure_deps()
+        self.ensure_before_make_pkg_callback()
 
     def run(self):
         self.build_and_install()
-        manifest = self.generate_manifest_content()
-        self.make_pkg(manifest)
+        self.before_make_pkg_callback(self.install_dir)
+        self.make_pkg(self.generate_manifest_content())
 
     def build_and_install(self):
         # Basically, we need the intermediate results of bdist_dumb,
@@ -395,6 +401,11 @@ class bdist_pkg(Command):
         else:
             raise DistutilsOptionError('Unknown extras selected: {}'
                                        ''.format(', '.join(unknown_options)))
+
+    def ensure_before_make_pkg_callback(self):
+        if hasattr(self.before_make_pkg_callback, '__call__'):
+            return
+        raise DistutilsOptionError('before_make_pkg_callback must be callable')
 
     def iter_install_files(self):
         for root, dirs, files in os.walk(self.install_dir):
