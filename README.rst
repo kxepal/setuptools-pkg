@@ -176,9 +176,9 @@ Here is the complete list of options you may specify for `bdist_pkg`:
 FAQ
 ---
 
-- **How it's different from `pytoport`_?**
+- **How it's different from pytoport?**
 
-  The ``pytoport`` project generates *ports* from modules on *PyPI*.
+  The `pytoport`_ project generates *ports* from modules on *PyPI*.
   It does great job on this, but ``bdist_pkg`` solves a different problem,
   especially, when your project cannot be published on PyPI.
 
