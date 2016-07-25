@@ -7,6 +7,7 @@
 # you should have received as part of this distribution.
 #
 
+import os
 from distutils.errors import DistutilsOptionError
 
 from .utils import EmptyProject, SimpleProject
@@ -52,3 +53,26 @@ class TestSimpleProjectManifest(SimpleProject):
 
         self.assertEqual(manifest['licenselogic'], 'single')
         self.assertEqual(manifest['licenses'], [self.dist.metadata.license])
+
+    def test_dirs_and_files(self):
+        self.cmd.finalize_options()
+        self.cmd.install_dir = os.path.join(os.path.dirname(__file__),
+                                            'simple_project_layout')
+        manifest = self.cmd.generate_manifest_content()
+
+        for key, value in manifest['directories'].items():
+            self.assertIsInstance(key, str)
+            self.assertIsInstance(value, dict)
+
+            self.assertEqual(value['gname'], self.cmd.gname)
+            self.assertEqual(value['perm'], '0755')
+            self.assertEqual(value['uname'], self.cmd.uname)
+
+        for key, value in manifest['files'].items():
+            self.assertIsInstance(key, str)
+            self.assertIsInstance(value, dict)
+
+            self.assertEqual(value['gname'], self.cmd.gname)
+            self.assertEqual(value['perm'], '0644')
+            self.assertEqual(value['uname'], self.cmd.uname)
+            self.assertIn('sum', value)

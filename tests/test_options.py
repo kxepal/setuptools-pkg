@@ -120,6 +120,11 @@ class TestEmptyProjectOptions(EmptyProject):
         self.cmd.finalize_options()
         self.assertEqual(self.cmd.desc, 'UNKNOWN')
 
+    def test_gname(self):
+        self.assertIsNone(self.cmd.gname)
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.gname, 'wheel')
+
     def test_license(self):
         self.cmd.finalize_options()
         self.assertEqual(self.cmd.license, None)
@@ -154,6 +159,11 @@ class TestEmptyProjectOptions(EmptyProject):
         self.cmd.prefix = '/tmp/foo/bar/'
         self.cmd.finalize_options()
         self.assertEqual(self.cmd.prefix, '/tmp/foo/bar')
+
+    def test_uname(self):
+        self.assertIsNone(self.cmd.uname)
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.uname, 'root')
 
     def test_version(self):
         self.assertIsNone(self.cmd.version)

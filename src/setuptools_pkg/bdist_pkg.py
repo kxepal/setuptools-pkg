@@ -85,6 +85,7 @@ class bdist_pkg(Command):
         # self.dirs = None
         # self.files = None
         # self.flatsize = None
+        self.gname = None
         # TODO: Do we need in groups definition?
         # self.groups = None
         self.license = None
@@ -113,6 +114,7 @@ class bdist_pkg(Command):
         # self.shlibs_requires = None
         # TODO: Support checksum.
         # self.sum = None
+        self.uname = None
         # TODO: Do we need to specify users?
         # self.users = None
         self.version = None
@@ -135,12 +137,14 @@ class bdist_pkg(Command):
         self.ensure_categories(project)
         self.ensure_string('comment', project.get_description())
         self.ensure_string('desc', project.get_long_description())
+        self.ensure_string('gname', 'wheel')
         self.ensure_string('license', self.resolve_license(project))
         self.ensure_string('maintainer', self.get_maintainer(project))
         self.ensure_string('name', project.get_name())
         self.ensure_string('origin', self.get_default_origin(project))
         self.ensure_prefix('/usr/local')
         self.ensure_string('version', project.get_version())
+        self.ensure_string('uname', 'root')
         self.ensure_string('www', project.get_url())
         self.ensure_options()
         self.ensure_deps()
@@ -190,8 +194,17 @@ class bdist_pkg(Command):
             with open(real_file_path, 'rb') as fh:
                 data = fh.read()
                 manifest['flatsize'] += len(data)
-                mdirs[os.path.dirname(install_path)] = 'y'
-                mfiles[install_path] = hashlib.sha256(data).hexdigest()
+                mdirs[os.path.dirname(install_path)] = {
+                    'gname': self.gname,
+                    'perm': '0755',
+                    'uname': self.uname,
+                }
+                mfiles[install_path] = {
+                    'gname': self.gname,
+                    'perm': '0644',
+                    'sum': hashlib.sha256(data).hexdigest(),
+                    'uname': self.uname,
+                }
 
         # TODO: Should we keep UNKNOWN values?
         manifest = {key: value for key, value in manifest.items()
