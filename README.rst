@@ -140,6 +140,8 @@ Here is the complete list of options you may specify for `bdist_pkg`:
 
 - ``gname``: A group name owner of the installed files, ``wheel`` by default.
 
+- ``groups``: A list of groups to provide.
+
 - ``license``: Project license.
   By default uses ``license`` field of project metadata.
 
@@ -166,6 +168,8 @@ Here is the complete list of options you may specify for `bdist_pkg`:
   system packages. The result fills the ``deps`` option.
 
 - ``uname``: A owner user name of the installed files, ``root`` by default.
+
+- ``users``: A list of users to provide.
 
 - ``version``: Package version. As like package name, can be different from
   real project version, depending on local modifications, patches, epoch etc.

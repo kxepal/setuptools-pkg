@@ -125,6 +125,26 @@ class TestEmptyProjectOptions(EmptyProject):
         self.cmd.finalize_options()
         self.assertEqual(self.cmd.gname, 'wheel')
 
+    def test_groups(self):
+        self.assertIsNone(self.cmd.groups)
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.groups, None)
+
+    def test_groups_set(self):
+        self.cmd.groups = ['test']
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.groups, ['test'])
+
+    def test_groups_set_str(self):
+        self.cmd.groups = 'test,passed'
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.groups, ['test', 'passed'])
+
+    def test_groups_bad(self):
+        self.cmd.groups = 42
+        with self.assertRaises(DistutilsOptionError):
+            self.cmd.finalize_options()
+
     def test_license(self):
         self.cmd.finalize_options()
         self.assertEqual(self.cmd.license, None)
@@ -164,6 +184,26 @@ class TestEmptyProjectOptions(EmptyProject):
         self.assertIsNone(self.cmd.uname)
         self.cmd.finalize_options()
         self.assertEqual(self.cmd.uname, 'root')
+
+    def test_users(self):
+        self.assertIsNone(self.cmd.users)
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.users, None)
+
+    def test_users_set(self):
+        self.cmd.users = ['test']
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.users, ['test'])
+
+    def test_users_set_str(self):
+        self.cmd.users = 'test,passed'
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.users, ['test', 'passed'])
+
+    def test_users_bad(self):
+        self.cmd.users = 42
+        with self.assertRaises(DistutilsOptionError):
+            self.cmd.finalize_options()
 
     def test_version(self):
         self.assertIsNone(self.cmd.version)

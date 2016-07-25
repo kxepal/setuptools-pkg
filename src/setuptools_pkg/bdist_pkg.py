@@ -86,8 +86,7 @@ class bdist_pkg(Command):
         # self.files = None
         # self.flatsize = None
         self.gname = None
-        # TODO: Do we need in groups definition?
-        # self.groups = None
+        self.groups = None
         self.license = None
         self.maintainer = None
         # TODO: should that be single message or multiple ones?
@@ -115,8 +114,7 @@ class bdist_pkg(Command):
         # TODO: Support checksum.
         # self.sum = None
         self.uname = None
-        # TODO: Do we need to specify users?
-        # self.users = None
+        self.users = None
         self.version = None
         # TODO: Can Python packages be vital?
         # self.vital = None
@@ -138,6 +136,7 @@ class bdist_pkg(Command):
         self.ensure_string('comment', project.get_description())
         self.ensure_string('desc', project.get_long_description())
         self.ensure_string('gname', 'wheel')
+        self.ensure_string_list('groups')
         self.ensure_string('license', self.resolve_license(project))
         self.ensure_string('maintainer', self.get_maintainer(project))
         self.ensure_string('name', project.get_name())
@@ -145,6 +144,7 @@ class bdist_pkg(Command):
         self.ensure_prefix('/usr/local')
         self.ensure_string('version', project.get_version())
         self.ensure_string('uname', 'root')
+        self.ensure_string_list('users')
         self.ensure_string('www', project.get_url())
         self.ensure_options()
         self.ensure_deps()
@@ -177,6 +177,7 @@ class bdist_pkg(Command):
             'directories': {},
             'files': {},
             'flatsize': 0,
+            'groups': self.groups,
             'licenselogic': 'single',
             'licenses': [self.license] if self.license else [],
             'maintainer': self.maintainer,
@@ -184,6 +185,7 @@ class bdist_pkg(Command):
             'options': self.options,
             'origin': self.origin,
             'prefix': self.prefix,
+            'users': self.users,
             'version': self.version,
             'www': self.www,
         }
