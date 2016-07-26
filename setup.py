@@ -20,8 +20,14 @@ if os.path.exists('VERSION'):
 else:
     # For every else cases we use git for the version info.
     __version__ = os.popen('git describe --tags --always').read().strip()
-    base, distance, hash = __version__.split('-')
-    __version__ = '{}.{}+{}'.format(base, distance, hash)
+    try:
+        base, distance, hash = __version__.split('-')
+    except ValueError:
+        # We're on release teg.
+        pass
+    else:
+        # Reformat git describe for PEP-440
+        __version__ = '{}.{}+{}'.format(base, distance, hash)
 if not __version__:
     # However, things can go wrong, so we'll cry for help here.
     raise RuntimeError('cannot detect project version')
