@@ -102,9 +102,8 @@ class bdist_pkg(Command):
         # TODO: What is the path?
         # self.path = None
         self.prefix = None
-        # TODO: How can we use the following fields?
-        # self.provides = None
-        # self.requires = None
+        self.provides = None
+        self.requires = None
         # TODO: Add scripts support.
         # self.scripts = None
         # TODO: Do we need shared libs support?
@@ -142,6 +141,8 @@ class bdist_pkg(Command):
         self.ensure_string('name', project.get_name())
         self.ensure_string('origin', self.get_default_origin(project))
         self.ensure_prefix('/usr/local')
+        self.ensure_string_list('provides')
+        self.ensure_string_list('requires')
         self.ensure_string('version', project.get_version())
         self.ensure_string('uname', 'root')
         self.ensure_string_list('users')
@@ -185,6 +186,8 @@ class bdist_pkg(Command):
             'options': self.options,
             'origin': self.origin,
             'prefix': self.prefix,
+            'provides': self.provides,
+            'requires': self.requires,
             'users': self.users,
             'version': self.version,
             'www': self.www,

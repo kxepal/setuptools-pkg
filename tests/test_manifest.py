@@ -46,6 +46,8 @@ class TestSimpleProjectManifest(SimpleProject):
             'options': 'options',
             'origin': 'origin',
             'prefix': 'prefix',
+            'provides': 'provides',
+            'requires': 'requires',
         }
         for attr, key in cmd_map.items():
             self.assertEqual(manifest[key], getattr(self.cmd, attr),

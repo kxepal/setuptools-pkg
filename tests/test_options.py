@@ -180,6 +180,46 @@ class TestEmptyProjectOptions(EmptyProject):
         self.cmd.finalize_options()
         self.assertEqual(self.cmd.prefix, '/tmp/foo/bar')
 
+    def test_provides(self):
+        self.assertIsNone(self.cmd.provides)
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.provides, None)
+
+    def test_provides_set(self):
+        self.cmd.provides = ['test']
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.provides, ['test'])
+
+    def test_provides_set_str(self):
+        self.cmd.provides = 'test,passed'
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.provides, ['test', 'passed'])
+
+    def test_provides_bad(self):
+        self.cmd.provides = 42
+        with self.assertRaises(DistutilsOptionError):
+            self.cmd.finalize_options()
+
+    def test_requires(self):
+        self.assertIsNone(self.cmd.requires)
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.requires, None)
+
+    def test_requires_set(self):
+        self.cmd.requires = ['test']
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.requires, ['test'])
+
+    def test_requires_set_str(self):
+        self.cmd.requires = 'test,passed'
+        self.cmd.finalize_options()
+        self.assertEqual(self.cmd.requires, ['test', 'passed'])
+
+    def test_requires_bad(self):
+        self.cmd.requires = 42
+        with self.assertRaises(DistutilsOptionError):
+            self.cmd.finalize_options()
+
     def test_uname(self):
         self.assertIsNone(self.cmd.uname)
         self.cmd.finalize_options()

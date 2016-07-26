@@ -162,6 +162,10 @@ Here is the complete list of options you may specify for `bdist_pkg`:
 - ``prefix``:  The path where the files contained in this package are installed
   (usually ``/usr/local``).
 
+- ``provides``: A list of features/services packages provides.
+
+- ``requires``: A list of features/services packages paquires.
+
 - ``requirements_mapping``: Mapping between PyPI requirements and FreeBSD
   packages. This mapping helps to ensure that all the dependencies specified
   in ``install_requires`` and ``extras_require`` will be satisfied through

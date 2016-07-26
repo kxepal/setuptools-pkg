@@ -86,6 +86,8 @@ class SimpleProject(TestProject):
                 'version': '1.2.3',
             },
         }
+        cmd.provides = ['features']
+        cmd.requires = ['database']
         return cmd
 
 
