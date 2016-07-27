@@ -90,7 +90,6 @@ class bdist_pkg(Command):
         # self.dirs = None
         # self.files = None
         # self.flatsize = None
-        self.gname = None
         self.groups = None
         self.license = None
         self.maintainer = None
@@ -117,7 +116,6 @@ class bdist_pkg(Command):
         # self.shlibs_requires = None
         # TODO: Support checksum.
         # self.sum = None
-        self.uname = None
         self.users = None
         self.version = None
         # TODO: Can Python packages be vital?
@@ -139,7 +137,6 @@ class bdist_pkg(Command):
         self.ensure_categories(project)
         self.ensure_string('comment', project.get_description())
         self.ensure_string('desc', project.get_long_description())
-        self.ensure_string('gname', 'wheel')
         self.ensure_string_list('groups')
         self.ensure_string('license', self.resolve_license(project))
         self.ensure_string('maintainer', self.get_maintainer(project))
@@ -149,7 +146,6 @@ class bdist_pkg(Command):
         self.ensure_string_list('provides')
         self.ensure_string_list('requires')
         self.ensure_string('version', project.get_version())
-        self.ensure_string('uname', 'root')
         self.ensure_string_list('users')
         self.ensure_string('www', project.get_url())
         self.ensure_options()
@@ -209,15 +205,15 @@ class bdist_pkg(Command):
                 data = fh.read()
                 manifest['flatsize'] += len(data)
                 mdirs[os.path.dirname(install_path)] = {
-                    'gname': self.gname,
+                    'gname': 'wheel',
                     'perm': '0755',
-                    'uname': self.uname,
+                    'uname': 'root',
                 }
                 mfiles[install_path] = {
-                    'gname': self.gname,
+                    'gname': 'wheel',
                     'perm': '0644',
                     'sum': hashlib.sha256(data).hexdigest(),
-                    'uname': self.uname,
+                    'uname': 'root',
                 }
 
         # TODO: Should we keep UNKNOWN values?

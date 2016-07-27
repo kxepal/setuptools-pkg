@@ -138,8 +138,6 @@ Here is the complete list of options you may specify for `bdist_pkg`:
 - ``desc``: A longer description of the package.
   By default uses ``long_description`` field of project metadata.
 
-- ``gname``: A group name owner of the installed files, ``wheel`` by default.
-
 - ``groups``: A list of groups to provide.
 
 - ``license``: Project license.
@@ -170,8 +168,6 @@ Here is the complete list of options you may specify for `bdist_pkg`:
   packages. This mapping helps to ensure that all the dependencies specified
   in ``install_requires`` and ``extras_require`` will be satisfied through
   system packages. The result fills the ``deps`` option.
-
-- ``uname``: A owner user name of the installed files, ``root`` by default.
 
 - ``users``: A list of users to provide.
 

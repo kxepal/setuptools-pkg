@@ -120,11 +120,6 @@ class TestEmptyProjectOptions(EmptyProject):
         self.cmd.finalize_options()
         self.assertEqual(self.cmd.desc, 'UNKNOWN')
 
-    def test_gname(self):
-        self.assertIsNone(self.cmd.gname)
-        self.cmd.finalize_options()
-        self.assertEqual(self.cmd.gname, 'wheel')
-
     def test_groups(self):
         self.assertIsNone(self.cmd.groups)
         self.cmd.finalize_options()
@@ -219,11 +214,6 @@ class TestEmptyProjectOptions(EmptyProject):
         self.cmd.requires = 42
         with self.assertRaises(DistutilsOptionError):
             self.cmd.finalize_options()
-
-    def test_uname(self):
-        self.assertIsNone(self.cmd.uname)
-        self.cmd.finalize_options()
-        self.assertEqual(self.cmd.uname, 'root')
 
     def test_users(self):
         self.assertIsNone(self.cmd.users)

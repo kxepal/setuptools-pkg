@@ -66,15 +66,15 @@ class TestSimpleProjectManifest(SimpleProject):
             self.assertIsInstance(key, str)
             self.assertIsInstance(value, dict)
 
-            self.assertEqual(value['gname'], self.cmd.gname)
+            self.assertEqual(value['gname'], 'wheel')
             self.assertEqual(value['perm'], '0755')
-            self.assertEqual(value['uname'], self.cmd.uname)
+            self.assertEqual(value['uname'], 'root')
 
         for key, value in manifest['files'].items():
             self.assertIsInstance(key, str)
             self.assertIsInstance(value, dict)
 
-            self.assertEqual(value['gname'], self.cmd.gname)
+            self.assertEqual(value['gname'], 'wheel')
             self.assertEqual(value['perm'], '0644')
-            self.assertEqual(value['uname'], self.cmd.uname)
+            self.assertEqual(value['uname'], 'root')
             self.assertIn('sum', value)
