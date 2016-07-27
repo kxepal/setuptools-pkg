@@ -269,8 +269,16 @@ class bdist_pkg(Command):
     def make_tar(self, files_paths):
         basename = '{}-{}.tar'.format(self.name, self.version)
         path = os.path.join(self.dist_dir, basename)
+        seen = set()
         with tarfile.open(path, 'w') as tar:
             for file_path, tar_path in files_paths:
+                tar_dir_path = os.path.dirname(tar_path)
+                if tar_dir_path and tar_dir_path not in seen:
+                    tarinfo = tar.gettarinfo(os.path.dirname(file_path),
+                                             tar_dir_path)
+                    tarinfo.name = tar_dir_path
+                    tar.addfile(tarinfo)
+                    seen.add(tar_dir_path)
                 tarinfo = tar.gettarinfo(file_path, tar_path)
                 tarinfo.name = tar_path
                 with open(file_path, 'rb') as f:
