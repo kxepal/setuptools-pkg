@@ -37,3 +37,18 @@ class TestRunCommand(SimpleProject):
         self.cmd.build_and_install()
         self.cmd.run_command.assert_has_calls([mock.call('build'),
                                                mock.call('install')])
+
+    @mock.patch('shutil.rmtree')
+    def test_maybe_remove_temp(self, rmtree):
+        self.cmd.maybe_remove_temp(None)
+        self.assertFalse(rmtree.called)
+        self.cmd.maybe_remove_temp('/something/that/doesnt/exists')
+        self.assertFalse(rmtree.called)
+        self.cmd.maybe_remove_temp(__file__)
+        self.assertTrue(rmtree.called)
+
+    @mock.patch('shutil.rmtree')
+    def test_keep_temps(self, rmtree):
+        self.cmd.keep_temp = True
+        self.cmd.maybe_remove_temp(__file__)
+        self.assertFalse(rmtree.called)

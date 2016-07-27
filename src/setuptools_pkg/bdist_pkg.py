@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import platform
+import shutil
 import sys
 import tarfile
 from distutils.errors import DistutilsOptionError
@@ -50,7 +51,10 @@ class bdist_pkg(Command):
          'Set format as the package output format.  It can be one'
          ' of txz, tbz, tgz or tar.  If an invalid or no format is specified'
          ' tgz is assumed.'),
+        ('keep-temp', None,
+         'keep intermediate build directories and files')
     ]
+    boolean_options = ('keep-intermediate-files',)
 
     compressor_for_format = {
         'txz': lzma,
@@ -63,6 +67,7 @@ class bdist_pkg(Command):
         self.before_make_pkg_callback = before_make_pkg_callback
         self.dist_dir = None
         self.format = None
+        self.keep_temp = False
         self.requirements_mapping = None
         self.selected_options = None
         self.initialize_manifest_options()
@@ -155,17 +160,21 @@ class bdist_pkg(Command):
         self.build_and_install()
         self.before_make_pkg_callback(self.install_dir)
         self.make_pkg(self.generate_manifest_content())
+        self.maybe_remove_temp(self.bdist_base)
 
     def build_and_install(self):
         # Basically, we need the intermediate results of bdist_dumb,
         # but since it's too monolithic and does the stuff that we would like
         # to avoid, here short copy-paste happens /:
+        build = self.reinitialize_command('build', reinit_subcommands=1)
         self.run_command('build')
         install = self.reinitialize_command('install', reinit_subcommands=1)
         install.prefix = self.prefix
         install.root = self.install_dir
         install.warn_dir = 0
         self.run_command('install')
+        for path in {build.build_lib, build.build_scripts, build.build_temp}:
+            self.maybe_remove_temp(path)
 
     def generate_manifest_content(self):
         manifest = {
@@ -240,6 +249,7 @@ class bdist_pkg(Command):
             if compressor is None:
                 raise RuntimeError('Format {} is not supported'.format(ext))
             self.compress_tar(tar_path, ext, compressor)
+            os.remove(tar_path)
 
     def make_manifest(self, content):
         path = os.path.join(self.bdist_dir, '+MANIFEST')
@@ -433,3 +443,11 @@ class bdist_pkg(Command):
                 install_path = install_path.replace(self.prefix + '/lib64/',
                                                     self.prefix + '/lib/')
                 yield os.path.join(root, file), install_path
+
+    def maybe_remove_temp(self, path):
+        if self.keep_temp:
+            return
+        if path is None:
+            return
+        if os.path.exists(path):
+            shutil.rmtree(path)
