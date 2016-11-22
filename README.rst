@@ -101,7 +101,7 @@ Common pitfalls here:
    to what you put there.
 4. Having `requirements.txt` instead of using ``install_requires`` in
    `setup.py`  will make your life harder since, technically, your project
-   has no dependencies and we cannot help you these to keep it consistent.
+   has no dependencies and we cannot help you there to keep it consistent.
    You'll have to specify ``deps`` command property directly and `bdist_pkg`
    could not ensure that you have there all the packages that project actually
    uses.
