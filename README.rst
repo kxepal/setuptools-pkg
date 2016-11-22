@@ -24,6 +24,10 @@ Once it's done, the ``setup.py bdist_pkg`` command will be available to produce
 If you don't want or just cannot have build-time dependencies, same effect can
 be reached by installing `setuptools-pkg` as regular Python package.
 
+If you need to build (actually, you want) ``txz`` packages and you're using
+Python 2, you should specify ``lzma-2.7`` extra to have lzma support.
+For Python 3 there is no need in this since it's available out-of-the box.
+
 Advanced usage
 --------------
 
