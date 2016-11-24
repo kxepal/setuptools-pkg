@@ -54,7 +54,7 @@ class bdist_pkg(Command):
         ('keep-temp', None,
          'Keep intermediate build directories and files.')
     ]
-    boolean_options = ('keep-intermediate-files',)
+    boolean_options = ('keep-temp',)
 
     compressor_for_format = {
         'txz': lzma,
