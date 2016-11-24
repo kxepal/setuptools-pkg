@@ -44,15 +44,15 @@ class bdist_pkg(Command):
 
     user_options = [
         ('bdist-base=', 'b',
-         'base directory for creating built distributions'),
+         'Base directory for creating built distributions.'),
         ('dist-dir=', 'd',
-         'directory to put distribute files in'),
+         'Directory to put distribute files in.'),
         ('format=', 'f',
          'Set format as the package output format.  It can be one'
          ' of txz, tbz, tgz or tar.  If an invalid or no format is specified'
          ' tgz is assumed.'),
         ('keep-temp', None,
-         'keep intermediate build directories and files')
+         'Keep intermediate build directories and files.')
     ]
     boolean_options = ('keep-intermediate-files',)
 
