@@ -7,11 +7,7 @@
 # you should have received as part of this distribution.
 #
 
-import shutil
-import tempfile
 import unittest
-import warnings
-import weakref
 
 from setuptools import Distribution
 
@@ -89,42 +85,3 @@ class SimpleProject(TestProject):
         cmd.provides = ['features']
         cmd.requires = ['database']
         return cmd
-
-
-class TemporaryDirectory(object):
-    """Create and return a temporary directory.  This has the same
-    behavior as mkdtemp but can be used as a context manager.  For
-    example:
-
-        with TemporaryDirectory() as tmpdir:
-            ...
-
-    Upon exiting the context, the directory and everything contained
-    in it are removed.
-
-    Backported from Python 3.4 sources.
-    """
-
-    def __init__(self, suffix="", prefix=tempfile.template, dir=None):
-        self.name = tempfile.mkdtemp(suffix, prefix, dir)
-        self._finalizer = weakref.finalize(
-            self, self._cleanup, self.name,
-            warn_message="Implicitly cleaning up {!r}".format(self))
-
-    @classmethod
-    def _cleanup(cls, name, warn_message):  # pragma: no cover
-        shutil.rmtree(name)
-        warnings.warn(warn_message, ResourceWarning)
-
-    def __repr__(self):
-        return "<{} {!r}>".format(self.__class__.__name__, self.name)
-
-    def __enter__(self):
-        return self.name
-
-    def __exit__(self, exc, value, tb):
-        self.cleanup()
-
-    def cleanup(self):  # pragma: no cover
-        if self._finalizer.detach():
-            shutil.rmtree(self.name)

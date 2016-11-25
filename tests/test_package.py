@@ -9,8 +9,10 @@
 
 import json
 import os
+import shutil
+import tempfile
 
-from .utils import SimpleProject, TemporaryDirectory, mock
+from .utils import SimpleProject, mock
 
 
 class TestSimplePackage(SimpleProject):
@@ -23,8 +25,10 @@ class TestSimplePackage(SimpleProject):
 
     def test_make_package(self):
         manifest = self.cmd.generate_manifest_content()
-        with TemporaryDirectory() as bdist_dir, \
-                TemporaryDirectory() as dist_dir:
+        try:
+            bdist_dir = tempfile.mkdtemp()
+            dist_dir = tempfile.mkdtemp()
+
             self.cmd.bdist_dir = bdist_dir
             self.cmd.dist_dir = dist_dir
             self.cmd.make_pkg(manifest)
@@ -32,13 +36,18 @@ class TestSimplePackage(SimpleProject):
             self.check_manifest_exists(bdist_dir)
             self.check_compact_manifest_exists(bdist_dir)
             self.check_txx_exists(self.cmd.dist_dir, self.cmd.format)
+        finally:
+            shutil.rmtree(bdist_dir)
+            shutil.rmtree(dist_dir)
 
     def test_make_tar_package(self):
         self.cmd.format = 'tar'
         manifest = self.cmd.generate_manifest_content()
         self.cmd.compress_tar = mock.Mock()
-        with TemporaryDirectory() as bdist_dir, \
-                TemporaryDirectory() as dist_dir:
+        try:
+            bdist_dir = tempfile.mkdtemp()
+            dist_dir = tempfile.mkdtemp()
+
             self.cmd.bdist_dir = bdist_dir
             self.cmd.dist_dir = dist_dir
             self.cmd.make_pkg(manifest)
@@ -46,18 +55,26 @@ class TestSimplePackage(SimpleProject):
             self.check_manifest_exists(bdist_dir)
             self.check_compact_manifest_exists(bdist_dir)
             self.check_tar_exists(self.cmd.dist_dir)
+        finally:
+            shutil.rmtree(bdist_dir)
+            shutil.rmtree(dist_dir)
         self.assertFalse(self.cmd.compress_tar.called)
 
     def test_fail_for_unsupported_format(self):
         self.cmd.format = 'txx'
         manifest = self.cmd.generate_manifest_content()
-        with TemporaryDirectory() as bdist_dir, \
-                TemporaryDirectory() as dist_dir:
+        try:
+            bdist_dir = tempfile.mkdtemp()
+            dist_dir = tempfile.mkdtemp()
+
             self.cmd.bdist_dir = bdist_dir
             self.cmd.dist_dir = dist_dir
             with self.assertRaises(RuntimeError):
                 self.cmd.make_pkg(manifest)
             self.check_tar_exists(self.cmd.dist_dir)
+        finally:
+            shutil.rmtree(bdist_dir)
+            shutil.rmtree(dist_dir)
 
     def check_manifest_exists(self, bdist_dir):
         manifest = os.path.join(bdist_dir, '+MANIFEST')
