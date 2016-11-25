@@ -41,10 +41,15 @@ class sdist(sdist_orig):
         super(sdist, self).run()
 
 
+with open('README.rst') as fobj:
+    long_description = fobj.read()
+
+
 setup(
     name='setuptools-pkg',
     version=__version__,
     description='Plugin for setuptools to build FreeBSD pkg',
+    long_description=long_description,
     license='BSD',
 
     author='Alexander Shorin',

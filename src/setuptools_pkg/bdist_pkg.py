@@ -226,6 +226,17 @@ class bdist_pkg(Command):
         if 'version' not in manifest:
             raise DistutilsOptionError('Project must have version defined')
 
+        if 'comment' not in manifest:
+            raise DistutilsOptionError('Project must have description defined')
+
+        if 'desc' not in manifest:
+            raise DistutilsOptionError('Project must have long_description'
+                                       ' defined')
+
+        if 'maintainer' not in manifest:
+            raise DistutilsOptionError('Project must have author or maintainer'
+                                       ' defined')
+
         return manifest
 
     def make_pkg(self, manifest):

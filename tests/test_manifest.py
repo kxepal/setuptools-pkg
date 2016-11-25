@@ -78,3 +78,33 @@ class TestSimpleProjectManifest(SimpleProject):
             self.assertEqual(value['perm'], '0644')
             self.assertEqual(value['uname'], 'root')
             self.assertIn('sum', value)
+
+    def test_require_project_name(self):
+        self.cmd.finalize_options()
+        self.cmd.name = None
+        with self.assertRaises(DistutilsOptionError):
+            self.cmd.generate_manifest_content()
+
+    def test_require_project_version(self):
+        self.cmd.finalize_options()
+        self.cmd.version = None
+        with self.assertRaises(DistutilsOptionError):
+            self.cmd.generate_manifest_content()
+
+    def test_require_project_description(self):
+        self.cmd.finalize_options()
+        self.cmd.comment = None
+        with self.assertRaises(DistutilsOptionError):
+            self.cmd.generate_manifest_content()
+
+    def test_require_project_long_description(self):
+        self.cmd.finalize_options()
+        self.cmd.desc = None
+        with self.assertRaises(DistutilsOptionError):
+            self.cmd.generate_manifest_content()
+
+    def test_require_project_maintainer(self):
+        self.cmd.finalize_options()
+        self.cmd.maintainer = None
+        with self.assertRaises(DistutilsOptionError):
+            self.cmd.generate_manifest_content()
