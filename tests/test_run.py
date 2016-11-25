@@ -7,6 +7,7 @@
 # you should have received as part of this distribution.
 #
 
+from pkg_resources import Requirement
 
 from .utils import SimpleProject, mock
 
@@ -37,6 +38,21 @@ class TestRunCommand(SimpleProject):
         self.cmd.build_and_install()
         self.cmd.run_command.assert_has_calls([mock.call('build'),
                                                mock.call('install')])
+
+    @mock.patch('pip.wheel.move_wheel_files')
+    def test_build_and_install_wheel(self, pip_move_wheel):
+        self.cmd.use_wheel = True
+        self.cmd.run_command = mock.Mock()
+        self.cmd.build_and_install()
+        self.cmd.run_command.assert_has_calls([mock.call('bdist_wheel')])
+        pip_move_wheel.assert_has_calls([mock.call(
+            name=self.cmd.name,
+            prefix=self.cmd.prefix,
+            req=Requirement.parse('{}=={}'.format(self.cmd.name,
+                                                  self.cmd.version)),
+            root=self.cmd.install_dir,
+            wheeldir=None,
+        )])
 
     @mock.patch('shutil.rmtree')
     def test_maybe_remove_temp(self, rmtree):

@@ -30,6 +30,15 @@ except ImportError:  # pragma: no cover
         lzma = None
 
 
+try:
+    import pip.wheel
+    from pkg_resources import Requirement
+except ImportError:
+    wheel_available = False
+else:
+    wheel_available = True
+
+
 __all__ = (
     'bdist_pkg',
 )
@@ -52,9 +61,12 @@ class bdist_pkg(Command):
          ' of txz, tbz, tgz or tar.  If an invalid or no format is specified'
          ' tgz is assumed.'),
         ('keep-temp', None,
-         'Keep intermediate build directories and files.')
+         'Keep intermediate build directories and files.'),
+        ('use-wheel', None,
+         'Use bdist_wheel to generated install layout instead of install'
+         ' command.'),
     ]
-    boolean_options = ('keep-temp',)
+    boolean_options = ('keep-temp', 'use-wheel')
 
     compressor_for_format = {
         'txz': lzma,
@@ -70,6 +82,7 @@ class bdist_pkg(Command):
         self.keep_temp = False
         self.requirements_mapping = None
         self.selected_options = None
+        self.use_wheel = False
         self.initialize_manifest_options()
 
     def initialize_manifest_options(self):
@@ -159,6 +172,12 @@ class bdist_pkg(Command):
         self.maybe_remove_temp(self.bdist_base)
 
     def build_and_install(self):
+        if self.use_wheel:
+            self.build_and_install_via_wheel()
+        else:
+            self.build_and_install_via_setuptools()
+
+    def build_and_install_via_setuptools(self):
         # Basically, we need the intermediate results of bdist_dumb,
         # but since it's too monolithic and does the stuff that we would like
         # to avoid, here short copy-paste happens /:
@@ -171,6 +190,24 @@ class bdist_pkg(Command):
         self.run_command('install')
         for path in {build.build_lib, build.build_scripts, build.build_temp}:
             self.maybe_remove_temp(path)
+
+    def build_and_install_via_wheel(self):
+        if not wheel_available:
+            raise RuntimeError('The `wheel` package is not available.')
+        bdist_wheel = self.reinitialize_command(
+            'bdist_wheel',
+            reinit_subcommands=1
+        )
+        bdist_wheel.keep_temp = True
+        self.run_command('bdist_wheel')
+        pip.wheel.move_wheel_files(
+            name=self.name,
+            req=Requirement.parse('{}=={}'.format(self.name, self.version)),
+            wheeldir=bdist_wheel.bdist_dir,
+            root=self.install_dir,
+            prefix=self.prefix,
+        )
+        self.maybe_remove_temp(bdist_wheel.bdist_dir)
 
     def generate_manifest_content(self):
         manifest = {

@@ -98,6 +98,10 @@ setup(
         'lzma-2.7': [
             'backports.lzma==0.0.6',
         ],
+        'wheel': [
+            'pip>=8.0.0',
+            'wheel>=0.25.0',
+        ],
     },
     command_options={
         'bdist_pkg': {
