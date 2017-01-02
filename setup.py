@@ -11,11 +11,17 @@ import os
 from setuptools import find_packages, setup
 from setuptools.command.sdist import sdist as sdist_orig
 
+
+ROOT_DIR = os.path.dirname(__file__)
+README_PATH = os.path.join(ROOT_DIR, 'README.rst')
+VERSION_PATH = os.path.join(ROOT_DIR, 'VERSION')
+
+
 # Python project version is a well known place where wheels get reinvented
 # again and again. This one is not an exception.
-if os.path.exists('VERSION'):
+if os.path.exists(VERSION_PATH):
     # The VERSION file contains full project version to use.
-    with open('VERSION') as verfile:
+    with open(VERSION_PATH) as verfile:
         __version__ = verfile.read().strip()
 else:
     # For every else cases we use git for the version info.
@@ -36,12 +42,12 @@ if not __version__:
 class sdist(sdist_orig):
 
     def run(self):
-        with open('VERSION', 'w') as fobj:
+        with open(VERSION_PATH, 'w') as fobj:
             fobj.write(__version__)
         sdist_orig.run(self)
 
 
-with open('README.rst') as fobj:
+with open(README_PATH) as fobj:
     long_description = fobj.read()
 
 
