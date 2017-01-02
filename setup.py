@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Alexander Shorin
+# Copyright (C) 2016-2017 Alexander Shorin
 # All rights reserved.
 #
 # This software is licensed as described in the file LICENSE, which
@@ -38,7 +38,7 @@ class sdist(sdist_orig):
     def run(self):
         with open('VERSION', 'w') as fobj:
             fobj.write(__version__)
-        super(sdist, self).run()
+        sdist_orig.run(self)
 
 
 with open('README.rst') as fobj:
