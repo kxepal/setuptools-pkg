@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Alexander Shorin
+# Copyright (C) 2016-2017 Alexander Shorin
 # All rights reserved.
 #
 # This software is licensed as described in the file LICENSE, which
@@ -32,10 +32,10 @@ except ImportError:  # pragma: no cover
 
 try:
     import pip.wheel
-    from pkg_resources import Requirement
 except ImportError:
     wheel_available = False
 else:
+    from pip._vendor.pkg_resources import Requirement
     wheel_available = True
 
 

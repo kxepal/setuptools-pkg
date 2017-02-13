@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2016 Alexander Shorin
+# Copyright (C) 2016-2017 Alexander Shorin
 # All rights reserved.
 #
 # This software is licensed as described in the file LICENSE, which
 # you should have received as part of this distribution.
 #
 
-from pkg_resources import Requirement
+from pip._vendor import pkg_resources
 
 from .utils import SimpleProject, mock
 
@@ -48,8 +48,10 @@ class TestRunCommand(SimpleProject):
         pip_move_wheel.assert_has_calls([mock.call(
             name=self.cmd.name,
             prefix=self.cmd.prefix,
-            req=Requirement.parse('{}=={}'.format(self.cmd.name,
-                                                  self.cmd.version)),
+            req=pkg_resources.Requirement.parse('{}=={}'.format(
+                self.cmd.name,
+                self.cmd.version
+            )),
             root=self.cmd.install_dir,
             wheeldir=None,
         )])
