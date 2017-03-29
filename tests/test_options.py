@@ -45,24 +45,6 @@ class TestCommandOptions(EmptyProject):
         self.assertTrue(self.cmd.warn.called)
         self.assertEqual(self.cmd.format, 'tgz')
 
-    def test_before_make_pkg_callback(self):
-        self.assertIs(self.cmd.before_make_pkg_callback,
-                      bdist_pkg.before_make_pkg_callback)
-        self.cmd.finalize_options()
-        self.assertIs(self.cmd.before_make_pkg_callback,
-                      bdist_pkg.before_make_pkg_callback)
-
-    def test_before_make_pkg_callable(self):
-        def callback(install_dir):  # pragma: no cover
-            pass
-        self.cmd.before_make_pkg_callback = callback
-        self.cmd.finalize_options()
-
-    def test_before_make_pkg_not_callable(self):
-        self.cmd.before_make_pkg_callback = object()
-        with self.assertRaises(DistutilsOptionError):
-            self.cmd.finalize_options()
-
 
 class TestEmptyProjectOptions(EmptyProject):
 

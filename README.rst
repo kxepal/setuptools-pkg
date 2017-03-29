@@ -120,13 +120,6 @@ Here is the complete list of options you may specify for `bdist_pkg`:
   specify them manually if you build package on non-FreeBSD system or if you
   distribution is not pure.
 
-- ``before_make_pkg_callback``: A callback function that takes a single
-  argument with the path to installed sources directory. Used to customize
-  the install tree before package will be made. For instance, you can relocate
-  config files to the proper `/usr/local/etc` location or shared files,
-  prepare log and run directories etc. All the result will be packaged once
-  function is done.
-
 - ``categories``: A list (literally) of package categories.
   By default uses ``description`` field of project metadata.
 
