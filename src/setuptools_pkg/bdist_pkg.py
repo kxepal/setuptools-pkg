@@ -61,8 +61,11 @@ class bdist_pkg(Command):
         ('use-wheel', None,
          'Use bdist_wheel to generated install layout instead of install'
          ' command.'),
+        ('with-py-prefix', None,
+         'Prepends py{}{}- prefix to package name.'
+         ''.format(*sys.version_info[:2])),
     ]
-    boolean_options = ('keep-temp', 'use-wheel')
+    boolean_options = ('keep-temp', 'use-wheel', 'with-py-prefix')
 
     compressor_for_format = {
         'txz': lzma,
@@ -75,9 +78,11 @@ class bdist_pkg(Command):
         self.dist_dir = None
         self.format = None
         self.keep_temp = False
+        self.name_prefix = None
         self.requirements_mapping = None
         self.selected_options = None
         self.use_wheel = False
+        self.with_py_prefix = False
         self.initialize_manifest_options()
 
     def initialize_manifest_options(self):
@@ -148,7 +153,7 @@ class bdist_pkg(Command):
         self.ensure_string_list('groups')
         self.ensure_string('license', self.resolve_license(project))
         self.ensure_string('maintainer', self.get_maintainer(project))
-        self.ensure_string('name', project.get_name())
+        self.ensure_name(project)
         self.ensure_string('origin', self.get_default_origin(project))
         self.ensure_prefix('/usr/local')
         self.ensure_string_list('provides')
@@ -463,6 +468,14 @@ class bdist_pkg(Command):
                                        ' requirements, but not in bdist_pkg'
                                        ' requirements mapping: {}'
                                        ''.format(', '.join(missing)))
+
+    def ensure_name(self, project):
+        name = project.get_name()
+        if self.with_py_prefix:
+            name = 'py{}{}-{}'.format(
+                sys.version_info[0], sys.version_info[1], name
+            )
+        self.ensure_string('name', name)
 
     def ensure_options(self):
         provided_options = set(self.distribution.extras_require or {})
