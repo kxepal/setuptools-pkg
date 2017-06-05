@@ -13,11 +13,12 @@ import hashlib
 import json
 import os
 import platform
+import re
 import shutil
 import sys
 import tarfile
 from distutils.errors import DistutilsOptionError
-from itertools import chain
+from itertools import chain, takewhile
 
 from setuptools import Command
 
@@ -149,7 +150,7 @@ class bdist_pkg(Command):
         self.ensure_string('arch', self.get_arch())
         self.ensure_categories(project)
         self.ensure_string('comment', project.get_description())
-        self.ensure_string('desc', project.get_long_description())
+        self.ensure_desc(project)
         self.ensure_string_list('groups')
         self.ensure_string('license', self.resolve_license(project))
         self.ensure_string('maintainer', self.get_maintainer(project))
@@ -469,6 +470,11 @@ class bdist_pkg(Command):
                                        ' requirements mapping: {}'
                                        ''.format(', '.join(missing)))
 
+    def ensure_desc(self, project):
+        desc = project.get_long_description()
+        desc = self.cut_changelog(desc)
+        self.ensure_string('desc', desc)
+
     def ensure_name(self, project):
         name = project.get_name()
         if self.with_py_prefix:
@@ -504,3 +510,16 @@ class bdist_pkg(Command):
             return
         if os.path.exists(path):
             shutil.rmtree(path)
+
+    def cut_changelog(self, desc):
+        def match_changelog_header(line):
+            words = re.findall(r'\b\w+\b', line.lower())
+            if len(words) != 1:
+                return True
+            if 'changelog' in words or 'changes' in words:
+                return False
+            return True
+        return '\n'.join(takewhile(
+            match_changelog_header,
+            desc.splitlines()
+        ))
