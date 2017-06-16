@@ -173,6 +173,7 @@ class bdist_pkg(Command):
         self.ensure_string('www', project.get_url())
         self.ensure_options()
         self.ensure_deps()
+        self.maybe_rename_console_scripts(project)
 
     def run(self):
         self.build_and_install()
@@ -529,6 +530,21 @@ class bdist_pkg(Command):
             return
         if os.path.exists(path):
             shutil.rmtree(path)
+
+    def maybe_rename_console_scripts(self, project):
+        if not self.with_py_prefix:
+            return
+        console_scripts = project.entry_points.get('console_scripts')
+        if console_scripts is None:
+            return
+        prefixed_console_scripts = []
+        for script in console_scripts:
+            name, callback = script.split('=')
+            name = '{}{}.{}'.format(name.strip(), *sys.version_info[:2])
+            prefixed_console_scripts.append(
+                '{} = {}'.format(name, callback.strip())
+            )
+        project.entry_points['console_scripts'] = prefixed_console_scripts
 
     def cut_changelog(self, desc):
         def match_changelog_header(line):
