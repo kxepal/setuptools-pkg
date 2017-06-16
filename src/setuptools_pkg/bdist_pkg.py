@@ -131,8 +131,7 @@ class bdist_pkg(Command):
         self.prefix = None
         self.provides = None
         self.requires = None
-        # TODO: Add scripts support.
-        # self.scripts = None
+        self.scripts = None
         # TODO: Do we need shared libs support?
         # self.shlibs = None
         # self.shlibs_provides = None
@@ -168,6 +167,7 @@ class bdist_pkg(Command):
         self.ensure_prefix('/usr/local')
         self.ensure_string_list('provides')
         self.ensure_string_list('requires')
+        self.ensure_scripts()
         self.ensure_string('version', project.get_version())
         self.ensure_string_list('users')
         self.ensure_string('www', project.get_url())
@@ -239,6 +239,7 @@ class bdist_pkg(Command):
             'prefix': self.prefix,
             'provides': self.provides,
             'requires': self.requires,
+            'scripts': self.scripts,
             'users': self.users,
             'version': self.version,
             'www': self.www,
@@ -513,6 +514,33 @@ class bdist_pkg(Command):
         else:
             raise DistutilsOptionError('Unknown extras selected: {}'
                                        ''.format(', '.join(unknown_options)))
+
+    def ensure_scripts(self):
+        if self.scripts is None:
+            return
+        if not isinstance(self.scripts, dict):
+            raise DistutilsOptionError('scripts must be a dict, got {}'
+                                       ''.format(self.scripts))
+        valid_keys = {
+            'pre-install',
+            'post-install',
+            'install',
+            'pre-deinstall',
+            'post-deinstall',
+            'deinstall',
+            'pre-upgrade',
+            'post-upgrade',
+            'upgrade',
+        }
+        bad_keys = [key for key in self.scripts if key not in valid_keys]
+        if bad_keys:
+            raise DistutilsOptionError('invalid scripts: {}'
+                                       ''.format(', '.join(bad_keys)))
+        bad_keys = [key for key, value in self.scripts.items()
+                    if not isinstance(value, str)]
+        if bad_keys:
+            raise DistutilsOptionError('invalid scripts: {}'
+                                       ''.format(', '.join(bad_keys)))
 
     def iter_install_files(self):
         for root, dirs, files in os.walk(self.install_dir):

@@ -175,6 +175,8 @@ Here is the complete list of options you may specify for `bdist_pkg`:
   in ``install_requires`` and ``extras_require`` will be satisfied through
   system packages. The result fills the ``deps`` option.
 
+- ``scripts``: `Package scripts <https://wiki.freebsd.org/pkgng#Scripts>`_.
+
 - ``users``: A list of users to provide.
 
 - ``version``: Package version. As like package name, can be different from
