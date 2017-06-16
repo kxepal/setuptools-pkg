@@ -110,6 +110,15 @@ Common pitfalls here:
    could not ensure that you have there all the packages that project actually
    uses.
 
+That's could be found quite boring. However, if all your dependencies in pkg
+repository are names same as on PyPI and has Python version prefix (like
+``py35-setuptools``), than requirements mapping is optional. You can just make
+package with:
+
+.. code-block:: bash
+
+    python setup.py bdist_pkg --use-pypi-deps
+
 Expert usage
 ------------
 

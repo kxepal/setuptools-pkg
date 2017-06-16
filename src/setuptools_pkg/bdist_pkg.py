@@ -21,6 +21,7 @@ from distutils.errors import DistutilsOptionError
 from itertools import chain, takewhile
 
 from setuptools import Command
+from setuptools.package_index import PackageIndex
 
 try:
     import lzma
@@ -59,6 +60,11 @@ class bdist_pkg(Command):
          ' tgz is assumed.'),
         ('keep-temp', None,
          'Keep intermediate build directories and files.'),
+        ('use-pypi-deps', None,
+         'Automatically convert unknown Python dependencies to package ones.'
+         ' Note that those dependencies will be named with py{}{}- prefix and'
+         ' assumes that you have such packages in repository.'
+         ''.format(*sys.version_info[:2])),
         ('use-wheel', None,
          'Use bdist_wheel to generated install layout instead of install'
          ' command.'),
@@ -66,7 +72,8 @@ class bdist_pkg(Command):
          'Prepends py{}{}- prefix to package name.'
          ''.format(*sys.version_info[:2])),
     ]
-    boolean_options = ('keep-temp', 'use-wheel', 'with-py-prefix')
+    boolean_options = ('keep-temp', 'use-wheel', 'python-deps-to-pkg',
+                       'with-py-prefix')
 
     compressor_for_format = {
         'txz': lzma,
@@ -80,8 +87,10 @@ class bdist_pkg(Command):
         self.format = None
         self.keep_temp = False
         self.name_prefix = None
+        self.package_index = PackageIndex()
         self.requirements_mapping = None
         self.selected_options = None
+        self.use_pypi_deps = False
         self.use_wheel = False
         self.with_py_prefix = False
         self.initialize_manifest_options()
@@ -464,7 +473,17 @@ class bdist_pkg(Command):
             seen_deps.add(python_dep)
 
         missing = seen_deps ^ install_requires
-        if missing:
+        if missing and self.use_pypi_deps:
+            for item in missing:
+                requirement = Requirement.parse(item)
+                distribution = self.package_index.obtain(requirement)
+                key = 'py{1}{2}-{0}'.format(distribution.key,
+                                            *sys.version_info[:2])
+                self.deps[key] = {
+                    'origin': 'pypi/py-{}'.format(distribution.key),
+                    'version': distribution.version
+                }
+        elif missing:
             raise DistutilsOptionError('These packages are listed in install'
                                        ' requirements, but not in bdist_pkg'
                                        ' requirements mapping: {}'
