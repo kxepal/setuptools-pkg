@@ -20,6 +20,7 @@ import tarfile
 from distutils.errors import DistutilsOptionError
 from itertools import chain, takewhile
 
+from pkg_resources import Requirement
 from setuptools import Command
 from setuptools.package_index import PackageIndex
 
@@ -37,7 +38,7 @@ try:
 except ImportError:
     wheel_available = False
 else:
-    from pip._vendor.pkg_resources import Requirement
+    from pip._vendor.pkg_resources import Requirement as WhlRequirement
     wheel_available = True
 
 
@@ -211,7 +212,7 @@ class bdist_pkg(Command):
         self.run_command('bdist_wheel')
         pip.wheel.move_wheel_files(
             name=self.name,
-            req=Requirement.parse('{}=={}'.format(self.name, self.version)),
+            req=WhlRequirement.parse('{}=={}'.format(self.name, self.version)),
             wheeldir=bdist_wheel.bdist_dir,
             root=self.install_dir,
             prefix=self.prefix,
