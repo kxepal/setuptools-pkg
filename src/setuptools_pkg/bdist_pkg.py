@@ -210,9 +210,10 @@ class bdist_pkg(Command):
         )
         bdist_wheel.keep_temp = True
         self.run_command('bdist_wheel')
+        name = self.distribution.get_name()
         pip.wheel.move_wheel_files(
             name=self.name,
-            req=WhlRequirement.parse('{}=={}'.format(self.name, self.version)),
+            req=WhlRequirement.parse('{}=={}'.format(name, self.version)),
             wheeldir=bdist_wheel.bdist_dir,
             root=self.install_dir,
             prefix=self.prefix,
