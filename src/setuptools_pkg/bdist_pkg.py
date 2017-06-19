@@ -563,6 +563,8 @@ class bdist_pkg(Command):
     def maybe_rename_console_scripts(self, project):
         if not self.with_py_prefix:
             return
+        if not project.entry_points:
+            return
         console_scripts = project.entry_points.get('console_scripts')
         if console_scripts is None:
             return
