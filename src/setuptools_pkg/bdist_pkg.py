@@ -498,6 +498,7 @@ class bdist_pkg(Command):
 
     def ensure_desc(self, project):
         desc = project.get_long_description()
+        desc = desc if desc != 'UKNOWN' else project.get_description()
         desc = self.cut_changelog(desc)
         self.ensure_string('desc', desc)
 
