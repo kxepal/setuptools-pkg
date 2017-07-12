@@ -61,6 +61,8 @@ class bdist_pkg(Command):
          ' tgz is assumed.'),
         ('keep-temp', None,
          'Keep intermediate build directories and files.'),
+        ('origin=', None,
+         'Custom origin name for build package.'),
         ('use-pypi-deps', None,
          'Automatically convert unknown Python dependencies to package ones.'
          ' Note that those dependencies will be named with py{}{}- prefix and'
