@@ -192,22 +192,24 @@ class bdist_pkg(Command):
         # but since it's too monolithic and does the stuff that we would like
         # to avoid, here short copy-paste happens /:
         build = self.reinitialize_command('build', reinit_subcommands=1)
+        build.build_base = self.bdist_base
         self.run_command('build')
         install = self.reinitialize_command('install', reinit_subcommands=1)
         install.prefix = self.prefix
         install.root = self.install_dir
         install.warn_dir = 0
         self.run_command('install')
-        for path in {build.build_lib, build.build_scripts, build.build_temp}:
-            self.maybe_remove_temp(path)
 
     def build_and_install_via_wheel(self):
         if not wheel_available:
             raise RuntimeError('The `wheel` package is not available.')
+        build = self.reinitialize_command('build', reinit_subcommands=1)
+        build.build_base = self.bdist_base
         bdist_wheel = self.reinitialize_command(
             'bdist_wheel',
             reinit_subcommands=1
         )
+        bdist_wheel.bdist_base = self.bdist_base
         bdist_wheel.keep_temp = True
         self.run_command('bdist_wheel')
         name = self.distribution.get_name()
@@ -218,7 +220,6 @@ class bdist_pkg(Command):
             root=self.install_dir,
             prefix=self.prefix,
         )
-        self.maybe_remove_temp(bdist_wheel.bdist_dir)
 
     def generate_manifest_content(self):
         manifest = {
